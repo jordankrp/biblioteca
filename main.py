@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status, HTTPException
 from fastapi.params import Body
 from pydantic import BaseModel
 from typing import Optional
@@ -46,7 +46,7 @@ def root():
 def get_books():
     return {"books": my_books}
 
-@app.post("/books")
+@app.post("/books", status_code=status.HTTP_201_CREATED)
 def create_books(book: Book):
     book_dict = book.dict()
     book_dict['id'] = randrange(0, 100000)
@@ -54,7 +54,11 @@ def create_books(book: Book):
     return {"new_book": book_dict}
 
 @app.get("/books/{id}")
-def get_book(id: int):
+def get_book(id: int, response: Response):
     book = find_book(id)
-    print(book)
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"book with id {id} was not found",
+        )
     return {"book_detail": book}
