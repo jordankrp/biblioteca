@@ -125,7 +125,7 @@ def delete_post(id: int):
 def update_book(id: int, book: Book):
     
     cursor.execute(
-        """ UPDATE books SET title = %s, author = %s, year = %s, rating = %s, summary = %s, have_read = %s WHERE id = %s RETURNING * """,
+        """ UPDATE books SET title = %s, author = %s, year = %s, rating = %s, summary = %s, read = %s WHERE id = %s RETURNING * """,
         (book.title, book.author, book.year, book.rating, book.summary, book.read, str(id))    
     )
     updated_book = cursor.fetchone()
