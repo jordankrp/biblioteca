@@ -6,6 +6,7 @@ from typing import Optional
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import time
 
 # Load password from env variables
 PASSWORD = os.environ['POSTGRES_PASSWORD']
@@ -20,19 +21,22 @@ class Book(BaseModel):
     rating: Optional[int] = None
     read: bool = False
 
-
-try:
-    conn = psycopg2.connect(
-        host="localhost",
-        database="bibliotecadb",
-        user="postgres",
-        password=PASSWORD,
-        cursor_factory=RealDictCursor
-    )
-    print("Database connection successfull")
-except Exception as error:
-    print("Connection to DB failed")
-    print(f"Error: {error}")
+while True:
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            database="bibliotecadb",
+            user="postgres",
+            password=PASSWORD,
+            cursor_factory=RealDictCursor
+        )
+        cursor = conn.cursor()
+        print("Database connection was successfull")
+        break
+    except Exception as error:
+        print("Connection to DB failed")
+        print(f"Error: {error}")
+        time.sleep(2)
 
 my_books = [
     {
@@ -60,29 +64,40 @@ def find_book(id):
         if book["id"] == id:
             return book
 
+
 def find_index_book(id):
     for index, book in enumerate(my_books):
         if book['id'] == id:
             return index
 
+
 @app.get("/")
 def root():
     return {"message": "Hello from FastAPI"}
 
+
 @app.get("/books")
 def get_books():
-    return {"books": my_books}
+    cursor.execute(""" SELECT * FROM books """)
+    books = cursor.fetchall()
+    return {"books": books}
+
 
 @app.post("/books", status_code=status.HTTP_201_CREATED)
 def create_books(book: Book):
-    book_dict = book.dict()
-    book_dict['id'] = randrange(0, 100000)
-    my_books.append(book_dict)
-    return {"new_book": book_dict}
+    cursor.execute(
+        """ INSERT INTO books (title, author, summary, year) VALUES (%s, %s, %s, %s) RETURNING * """,
+        (book.title, book.author, book.summary, book.year)
+    )
+    new_book = cursor.fetchone()
+    conn.commit()
+    return {"new_book": new_book}
+
 
 @app.get("/books/{id}")
 def get_book(id: int, response: Response):
-    book = find_book(id)
+    cursor.execute(""" SELECT * FROM books WHERE id = %s """, (str(id),))
+    book = cursor.fetchone()
     if not book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -90,27 +105,35 @@ def get_book(id: int, response: Response):
         )
     return {"book_detail": book}
 
+
 @app.delete("/books/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
-    index = find_index_book(id)
-    if index == None:
+    cursor.execute("""  DELETE FROM books WHERE id = %s RETURNING * """, (str(id),))
+    deleted_book = cursor.fetchone()
+    conn.commit()
+    print(deleted_book)
+    if deleted_book == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"book with id {id} does not exist"
         )
-    my_books.pop(index)
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 
 @app.put("/books/{id}")
 def update_book(id: int, book: Book):
-    print(book)
-    index = find_index_book(id)
-    if index == None:
+    
+    cursor.execute(
+        """ UPDATE books SET title = %s, author = %s, year = %s, rating = %s, summary = %s, have_read = %s WHERE id = %s RETURNING * """,
+        (book.title, book.author, book.year, book.rating, book.summary, book.read, str(id))    
+    )
+    updated_book = cursor.fetchone()
+    conn.commit()
+
+    if updated_book == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"book with id {id} does not exist"
         )
-    book_dict = book.dict()
-    book_dict['id'] = id
-    my_books[index] = book_dict
-    return {"data": book_dict}
+    return {"data": updated_book}
