@@ -24,7 +24,7 @@ def get_books(db: Session = Depends(get_db)):
 def create_books(
     book: schemas.BookCreate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(oauth2.get_current_user)
+    current_user: int = Depends(oauth2.get_current_user)
 ):
 
     # cursor.execute(
@@ -34,8 +34,7 @@ def create_books(
     # new_book = cursor.fetchone()
     # conn.commit()
 
-    print(user_id)
-    new_book = models.Book(**book.dict())
+    new_book = models.Book(owner_id=current_user.id, **book.dict())
     db.add(new_book)
     db.commit()
     db.refresh(new_book)
@@ -61,7 +60,7 @@ def get_book(id: int, db: Session = Depends(get_db)):
 def delete_post(
     id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(oauth2.get_current_user)
+    current_user: int = Depends(oauth2.get_current_user)
 ):
 
     # cursor.execute("""  DELETE FROM books WHERE id = %s RETURNING * """, (str(id),))
@@ -69,12 +68,19 @@ def delete_post(
     # conn.commit()
 
     book_query = db.query(models.Book).filter(models.Book.id == id)
-    print(book_query)
-    if book_query.first() == None:
+    book = book_query.first()
+
+    if book == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"book with id {id} does not exist"
         )
+    
+    if book.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action."
+                        )
+
     book_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -85,7 +91,7 @@ def update_book(
     id: int,
     updated_book: schemas.BookCreate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(oauth2.get_current_user)
+    current_user: int = Depends(oauth2.get_current_user)
 ):
     
     # cursor.execute(
@@ -103,6 +109,12 @@ def update_book(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"book with id {id} does not exist"
         )
+    
+    if book.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action."
+                        )
+    
     book_query.update(updated_book.dict(), synchronize_session=False)
 
     db.commit()
