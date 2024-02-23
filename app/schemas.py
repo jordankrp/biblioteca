@@ -14,18 +14,6 @@ class BookBase(BaseModel):
 class BookCreate(BookBase):
     pass
 
-class BookResponse(BookBase):
-    id: int
-    created_at: datetime
-    owner_id: int
-
-    class Config:
-        orm_mode = True
-    
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
@@ -33,6 +21,19 @@ class UserResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+class BookResponse(BookBase):
+    id: int
+    created_at: datetime
+    owner_id: int
+    owner: UserResponse
+
+    class Config:
+        orm_mode = True
+    
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
 
 class UserLogin(BaseModel):
     email: EmailStr
