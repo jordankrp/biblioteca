@@ -1,0 +1,42 @@
+from fastapi import Response, status, HTTPException, Depends, APIRouter
+from sqlalchemy.orm import Session
+from .. import schemas, database, models, oauth2
+
+router = APIRouter(
+    prefix='/rating',
+    tags=['Rating']
+)
+
+@router.post("/", status_code= status.HTTP_201_CREATED)
+def rate(
+    rating: schemas.Rating,
+    db: Session = Depends(database.get_db),
+    current_user: int = Depends(oauth2.get_current_user)
+):
+    rating_query = db.query(models.Rating).filter(
+        models.Rating.book_id == rating.book_id,
+        models.Rating.user_id == current_user.id
+    )
+
+    rating_found = rating_query.first()
+
+    if rating_found:
+        print("Rating found")
+        # Need to update rating instead of rasing excpetion
+        # raise HTTPException(
+        #     status_code=status.HTTP_409_CONFLICT,
+        #     detail=f"User {current_user.id} has already rated book {rating.book_id}"
+        # )
+
+        # https://stackoverflow.com/questions/22134439/updating-specific-row-in-sqlalchemy
+        
+        
+    new_rating = models.Rating(
+        book_id=rating.book_id,
+        user_id=current_user.id,
+        rating=rating.rating
+    )
+
+    db.add(new_rating)
+    db.commit()
+    return {"message": "successfully added rating"}

@@ -1,6 +1,9 @@
-from pydantic import BaseModel, EmailStr
 from typing import Optional
+from typing_extensions import Annotated
 from datetime import datetime
+
+from pydantic import BaseModel, EmailStr, Field
+from pydantic.types import conint
 
 
 class BookBase(BaseModel):
@@ -45,3 +48,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+class Rating(BaseModel):
+    book_id: int
+    rating: int

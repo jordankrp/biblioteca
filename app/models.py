@@ -35,3 +35,10 @@ class User(Base):
         nullable=False,
         server_default=text('now()')
     )
+
+class Rating(Base):
+    __tablename__ = "ratings"
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), primary_key=True)
+    rating = Column(Integer, nullable=False)
