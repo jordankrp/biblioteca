@@ -52,3 +52,6 @@ class TokenData(BaseModel):
 class Rating(BaseModel):
     book_id: int
     rating: int
+
+class RemoveRating(BaseModel):
+    book_id: int
