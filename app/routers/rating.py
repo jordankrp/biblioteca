@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from .. import schemas, database, models, oauth2
 
 router = APIRouter(
-    prefix='/rating',
-    tags=['Rating']
+    prefix='/rate',
+    tags=['Rate']
 )
 
 @router.post("/", status_code= status.HTTP_201_CREATED)
@@ -30,7 +30,7 @@ def rate(
     if rating_found:
         # Update existing rating
         print("Rating found. Updating...")
-        rating_found.rating = rating.score
+        rating_found.score = rating.score
         db.commit()
         return{"message": "Rating updated"}        
 

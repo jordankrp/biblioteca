@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import Response, status, HTTPException, Depends, APIRouter
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import models, schemas, oauth2
@@ -23,6 +24,15 @@ def get_books(
     print(limit)
 
     books = db.query(models.Book).filter(models.Book.title.contains(search)).limit(limit).offset(skip).all()
+
+    results = db.query(models.Book, func.count(models.Rating.book_id).label("number_of_ratings")).join(
+        models.Rating,
+        models.Rating.book_id == models.Book.id,
+        isouter=True
+    ).group_by(models.Book.id).all()
+
+    print(results)
+
     return books
 
 
