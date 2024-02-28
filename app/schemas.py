@@ -11,8 +11,8 @@ class BookBase(BaseModel):
     author: str
     summary: Optional[str] = None
     year: int
-    rating: Optional[int] = None
-    read: bool = False
+    #rating: Optional[int] = None
+    #read: bool = False
 
 class BookCreate(BookBase):
     pass
@@ -51,7 +51,7 @@ class TokenData(BaseModel):
 
 class Rating(BaseModel):
     book_id: int
-    rating: int
+    score: int
 
 class RemoveRating(BaseModel):
     book_id: int

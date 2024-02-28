@@ -12,9 +12,9 @@ class Book(Base):
     title = Column(String, nullable=False)
     author = Column(String, nullable=False)
     year = Column(Integer, nullable=False)
-    rating = Column(Integer)
+    #rating = Column(Integer)
     summary = Column(String)
-    read = Column(Boolean, server_default='FALSE')
+    #read = Column(Boolean, server_default='FALSE')
     created_at = Column(
         TIMESTAMP(timezone=True),
         nullable=False,
@@ -41,4 +41,4 @@ class Rating(Base):
 
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), primary_key=True)
-    rating = Column(Integer, nullable=False)
+    score = Column(Integer, nullable=False)

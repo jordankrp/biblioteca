@@ -13,6 +13,13 @@ def rate(
     db: Session = Depends(database.get_db),
     current_user: int = Depends(oauth2.get_current_user)
 ):
+    book = db.query(models.Book).filter(models.Book.id == rating.book_id).first()
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Book with ID {rating.book_id} was not found."
+        )
+
     rating_query = db.query(models.Rating).filter(
         models.Rating.book_id == rating.book_id,
         models.Rating.user_id == current_user.id
@@ -23,7 +30,7 @@ def rate(
     if rating_found:
         # Update existing rating
         print("Rating found. Updating...")
-        rating_found.rating = rating.rating
+        rating_found.rating = rating.score
         db.commit()
         return{"message": "Rating updated"}        
 
@@ -31,7 +38,7 @@ def rate(
     new_rating = models.Rating(
         book_id=rating.book_id,
         user_id=current_user.id,
-        rating=rating.rating
+        score=rating.score
     )
 
     db.add(new_rating)
@@ -49,7 +56,6 @@ def rate(
         models.Rating.book_id == rating.book_id,
         models.Rating.user_id == current_user.id
     )
-    print(rating_query)
 
     rating_found = rating_query.first()
 
