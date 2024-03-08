@@ -21,15 +21,17 @@ def get_books(
 
     # cursor.execute(""" SELECT * FROM books """)
     # books = cursor.fetchall()
-    print(limit)
-
+    
+    # Average rating query:
+    # select books.*, AVG(ratings.score)::NUMERIC(10,2) as avg_rating from books LEFT JOIN ratings ON books.id = ratings.book_id group by books.id;
+    
     books = db.query(models.Book).filter(models.Book.title.contains(search)).limit(limit).offset(skip).all()
 
     results = db.query(models.Book, func.count(models.Rating.book_id).label("number_of_ratings")).join(
         models.Rating,
         models.Rating.book_id == models.Book.id,
         isouter=True
-    ).group_by(models.Book.id).all()
+    ).group_by(models.Book.id)
 
     print(results)
 
