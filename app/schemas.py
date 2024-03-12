@@ -11,8 +11,6 @@ class BookBase(BaseModel):
     author: str
     summary: Optional[str] = None
     year: int
-    #rating: Optional[int] = None
-    #read: bool = False
 
 class BookCreate(BookBase):
     pass
@@ -30,6 +28,14 @@ class BookResponse(BookBase):
     created_at: datetime
     owner_id: int
     owner: UserResponse
+
+    class Config:
+        orm_mode = True
+
+class BookResponseWithRatings(BaseModel):
+    Book: BookResponse
+    average_rating: float | None
+    number_of_ratings: int | None
 
     class Config:
         orm_mode = True

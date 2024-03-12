@@ -1,6 +1,6 @@
 from typing import List, Optional
 from fastapi import Response, status, HTTPException, Depends, APIRouter
-from sqlalchemy import func
+from sqlalchemy import func, cast, Numeric
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import models, schemas, oauth2
@@ -11,7 +11,7 @@ router = APIRouter(
     tags=['Books']
 )
 
-@router.get("/", response_model=List[schemas.BookResponse])
+@router.get("/", response_model=List[schemas.BookResponseWithRatings])
 def get_books(
     db: Session = Depends(get_db),
     limit: int = 10,
@@ -25,18 +25,19 @@ def get_books(
     # Average rating query:
     # select books.*, AVG(ratings.score)::NUMERIC(10,2) as avg_rating from books LEFT JOIN ratings ON books.id = ratings.book_id group by books.id;
     
-    books = db.query(models.Book).filter(models.Book.title.contains(search)).limit(limit).offset(skip).all()
+    #books = db.query(models.Book).filter(models.Book.title.contains(search)).limit(limit).offset(skip).all()
 
-    results = db.query(models.Book, func.count(models.Rating.book_id).label("number_of_ratings")).join(
+    books = db.query(
+        models.Book,
+        cast(func.avg(models.Rating.score), Numeric(10,2)).label("average_rating"),
+        func.count(models.Rating.score).label("number_of_ratings")
+    ).join(
         models.Rating,
         models.Rating.book_id == models.Book.id,
         isouter=True
-    ).group_by(models.Book.id)
-
-    print(results)
+    ).group_by(models.Book.id).filter(models.Book.title.contains(search)).limit(limit).offset(skip).all()
 
     return books
-
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.BookResponse)
 def create_books(
@@ -59,13 +60,24 @@ def create_books(
     return new_book
 
 
-@router.get("/{id}", response_model=schemas.BookResponse)
+@router.get("/{id}", response_model=schemas.BookResponseWithRatings)
 def get_book(id: int, db: Session = Depends(get_db)):
 
     # cursor.execute(""" SELECT * FROM books WHERE id = %s """, (str(id),))
     # book = cursor.fetchone()
 
-    book = db.query(models.Book).filter(models.Book.id == id).first()
+    #book = db.query(models.Book).filter(models.Book.id == id).first()
+
+    book = db.query(
+        models.Book,
+        cast(func.avg(models.Rating.score), Numeric(10,2)).label("average_rating"),
+        func.count(models.Rating.score).label("number_of_ratings")
+    ).join(
+        models.Rating,
+        models.Rating.book_id == models.Book.id,
+        isouter=True
+    ).group_by(models.Book.id).filter(models.Book.id == id).first()
+
     if not book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
