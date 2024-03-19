@@ -12,9 +12,7 @@ class Book(Base):
     title = Column(String, nullable=False)
     author = Column(String, nullable=False)
     year = Column(Integer, nullable=False)
-    #rating = Column(Integer)
     summary = Column(String)
-    #read = Column(Boolean, server_default='FALSE')
     created_at = Column(
         TIMESTAMP(timezone=True),
         nullable=False,
