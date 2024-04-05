@@ -27,6 +27,6 @@ app.include_router(rating.router)
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to Biblioteca!"}
+    return {"message": "Welcome to Biblioteca"}
 
 
