@@ -51,6 +51,17 @@ def test_user(client):
 
 
 @pytest.fixture
+def test_user_2(client):
+    user_data = {"email": "test2@gmail.com", "password": "pass123456"}
+    res = client.post("/users/", json=user_data)
+    assert res.status_code == 201
+
+    new_user = res.json()
+    new_user['password'] = user_data['password']
+    return new_user
+
+
+@pytest.fixture
 def token(test_user):
     return create_access_token({"user_id": test_user['id']})
 
@@ -61,10 +72,11 @@ def authorised_client(client, token):
         **client.headers,
         "Authorization": f"Bearer {token}"
     }
+    return client
 
 
 @pytest.fixture
-def test_books(test_user, session):
+def test_books(test_user, test_user_2, session):
     books_data = [
         {
             "title": "One Hundred Years of Solitude",
@@ -85,6 +97,12 @@ def test_books(test_user, session):
             "summary": "The story follows Meursault, an indifferent settler in French Algeria, who, weeks after his mother's funeral, kills an unnamed Arab man in Algiers.",
             "owner_id": test_user['id']
         },
+        {
+            "title": "Norwegian Wood",
+            "author": "Haruki Murakami",
+            "year": "1987",
+            "owner_id": test_user_2['id']
+        },
     ]
 
     def create_book_model(book):
@@ -95,28 +113,6 @@ def test_books(test_user, session):
     books_list = list(books_map)
 
     session.add_all(books_list)
-    #     [
-    #         models.Book(
-    #             title="One Hundred Years of Solitude",
-    #             author="Gabriel Garcia Marquez",
-    #             year="1967",
-    #             owner_id = test_user['id']
-    #         ),
-    #         models.Book(
-    #             title="The Trial",
-    #             author="Franz Kafka",
-    #             year="1925",
-    #             owner_id = test_user['id']
-    #         ),
-    #         models.Book(
-    #             title="The Stranger",
-    #             author="Albert Camus",
-    #             year="1942",
-    #             summary="The story follows Meursault, an indifferent settler in French Algeria, who, weeks after his mother's funeral, kills an unnamed Arab man in Algiers.",
-    #             owner_id = test_user['id']
-    #         ),        
-    #     ]
-    #)
     session.commit()
     books = session.query(models.Book).all()
     return books
