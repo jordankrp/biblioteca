@@ -79,7 +79,7 @@ def authorised_client(client, token):
 def test_books(test_user, test_user_2, session):
     books_data = [
         {
-            "title": "One Hundred Years of Solitude",
+            "title": "100 Years of Solitude",
             "author": "Gabriel Garcia Marquez",
             "year": "1967",
             "owner_id": test_user['id']

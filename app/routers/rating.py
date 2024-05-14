@@ -46,7 +46,7 @@ def rate(
     return {"message": "Rating added successfully"}
 
 
-@router.delete("/", status_code= status.HTTP_204_NO_CONTENT)
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 def rate(
     rating: schemas.RemoveRating,
     db: Session = Depends(database.get_db),

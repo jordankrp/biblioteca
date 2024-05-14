@@ -89,3 +89,51 @@ def test_delete_other_user_book(authorised_client, test_books):
     res = authorised_client.delete(f'/books/{test_books[3].id}')
     assert res.status_code == 403
     assert res.text == '{"detail":"Not authorized to perform requested action."}'
+
+def test_update_book(authorised_client, test_books):
+    data = {
+        "title": "One Hundred Years of Solitude",
+        "author": "Gabriel Garcia Marquez",
+        "year": 1967,
+        "summary": "The multi-generational story of the Buendía family, whose patriarch, José Arcadio Buendía, founded the fictitious town of Macondo."
+    }
+    res = authorised_client.put(f"/books/{test_books[0].id}", json=data)
+    updated_book = schemas.BookCreate(**res.json())
+    assert res.status_code == 200
+    assert updated_book.title == data['title']
+    assert updated_book.author == data['author']
+    assert updated_book.year == data['year']
+    assert updated_book.summary == data['summary']
+
+
+def test_update_other_user_book(authorised_client, test_books):
+    data = {
+        "title": "Norwegian Wood",
+        "author": "Haruki Takamuri",
+        "year": 1987
+    }
+    res = authorised_client.put(f"/books/{test_books[3].id}", json=data)
+    assert res.status_code == 403
+
+
+def test_update_book_unauthorised(client, test_books):
+    data = {
+        "title": "One Hundred Years of Solitude",
+        "author": "Gabriel Garcia Marquez",
+        "year": 1967,
+        "summary": "The multi-generational story of the Buendía family, whose patriarch, José Arcadio Buendía, founded the fictitious town of Macondo."
+    }
+    res = client.put(f"/books/{test_books[0].id}", json=data)
+    assert res.status_code == 401
+
+
+def test_update_nonexistent_book(authorised_client, test_books):
+    data = {
+        "title": "One Hundred Years of Solitude",
+        "author": "Gabriel Garcia Marquez",
+        "year": 1967,
+        "summary": "The multi-generational story of the Buendía family, whose patriarch, José Arcadio Buendía, founded the fictitious town of Macondo."
+    }
+    res = authorised_client.put("/books/9999", json=data)
+    assert res.status_code == 404
+
