@@ -18,6 +18,5 @@ jobs:
         run: pip install -r requirements.txt
       - name: test with pytest
         run: |
-          pip freeze | grep requests
-          pip install pytest
+          pip install pytest requests
           pytest
