@@ -27,6 +27,6 @@ app.include_router(rating.router)
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to Biblioteca API"}
+    return {"message": "Welcome to Biblioteca API. Code deployed through Github Actions."}
 
 

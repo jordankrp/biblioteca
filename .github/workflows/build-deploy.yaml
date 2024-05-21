@@ -3,7 +3,7 @@ name: Build and deploy code
 on: [push, pull_request]
 
 jobs:
-  job1:
+  build:
     environment:
       name: testing
     env:
@@ -65,3 +65,20 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Image digest
         run: echo ${{steps.docker_build.outputs.digest}}
+
+  deploy:
+    runs_on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Deploy to Ubuntu server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
+          script: |
+            cd app/src
+            git pull
+            sudo systemctl restart biblioteca-api
+
