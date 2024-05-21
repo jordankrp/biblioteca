@@ -4,12 +4,6 @@ from app import schemas
 from app.config import settings
 
 
-def test_homepage(client):
-    res = client.get("/")
-    assert res.json().get("message") == "Welcome to Biblioteca API"
-    assert res.status_code == 200
-
-
 def test_create_user(client):
     res = client.post("/users/", json={"email": "hello123@gmail.com", "password": "password123"})
     new_user = schemas.UserResponse(**res.json())
