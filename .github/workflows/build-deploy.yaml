@@ -81,5 +81,5 @@ jobs:
           script: |
             cd app/src
             git pull
-            sudo systemctl restart biblioteca-api
+            echo ${{secrets.PROD_PASSWORD}} | sudo -S systemctl restart biblioteca-api
 
