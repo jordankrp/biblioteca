@@ -6,7 +6,7 @@ from .database import engine
 from .routers import book, user, auth, rating
 from .config import settings
 
-# models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
