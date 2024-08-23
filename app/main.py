@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+#from fastapi.staticfiles import StaticFiles
 
 from . import models
 from .database import engine
@@ -9,6 +10,9 @@ from .config import settings
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Mount the static directory
+#app.mount("/static", StaticFiles(directory="static"), name="static")
 
 origins = ["*"]
 app.add_middleware(
