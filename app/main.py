@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-#from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from . import models
 from .database import engine
@@ -11,8 +12,6 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Mount the static directory
-#app.mount("/static", StaticFiles(directory="static"), name="static")
 
 origins = ["*"]
 app.add_middleware(
@@ -23,14 +22,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount the static directory to serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(book.router)
 app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(rating.router)
 
-@app.get("/")
+@app.get("/", response_class=FileResponse)
 def root():
-    return {"message": "Welcome to Biblioteca API. Code deployed through Github Actions."}
+    return FileResponse("static/index.html")
 
 

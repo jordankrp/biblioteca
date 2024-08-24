@@ -1,42 +1,89 @@
-// async function createResource() {
-//     const resourceData = document.getElementById('inputResource').value;
+document.addEventListener('DOMContentLoaded', function() {
+    fetchBooks();
 
-//     const response = await fetch('http://localhost:8000/resources/', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ data: resourceData }),
-//     });
+    // Handle login form submission
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        const loginData = { username, password };
+        
+        fetch('http://localhost:8000/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(loginData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.access_token) {
+                // Save the token in local storage (for future authenticated requests)
+                localStorage.setItem('token', data.access_token);
+                alert('Login successful!');
+                // Close the modal
+                hideModal('loginModal');
+            } else {
+                alert('Login failed: ' + (data.detail || 'Unknown error'));
+            }
+        })
+        .catch(error => console.error('Error logging in:', error));
+    });
 
-//     const newResource = await response.json();
-//     displayResource(newResource);
-// }
+    // Handle signup form submission
+    document.getElementById('signupForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const email = document.getElementById('signupEmail').value;
+        const password = document.getElementById('signupPassword').value;
 
-// function displayResource(resource) {
-//     const listItem = document.createElement('li');
-//     listItem.textContent = resource.data;
-//     document.getElementById('resourceList').appendChild(listItem);
-// }
+        const signupData = { email, password };
 
-async function login() {
-    const userData = document.getElementById('inputResource').value;
+        fetch('http://localhost:8000/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(signupData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                alert('Signup successful! You can now log in.');
+                // Close the modal
+                hideModal('signupModal');
+            } else {
+                alert('Signup failed: ' + (data.detail || 'Unknown error'));
+            }
+        })
+        .catch(error => console.error('Error signing up:', error));
+    });
+});
 
-    const response = await fetch('http://localhost:8000/users/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ data: userData }),
+function fetchBooks() {
+    fetch('http://localhost:8000/books')
+        .then(response => response.json())
+        .then(data => {
+            const booksList = document.getElementById('books-list');
+            booksList.innerHTML = '';
+
+            data.forEach(book => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${book.title} by ${book.author}`;
+                booksList.appendChild(listItem);
             });
-    
-    const loginResponse = await response.json();
-    displayResource(loginResponse);
+        })
+        .catch(error => console.error('Error fetching books:', error));
 }
 
-// Load existing resources when the page loads
-window.onload = async function() {
-    const response = await fetch('http://localhost:8000/books/');
-    const resources = await response.json();
-    resources.forEach(displayResource);
-};
+function showLogin() {
+    document.getElementById('loginModal').style.display = 'block';
+}
+
+function showSignup() {
+    document.getElementById('signupModal').style.display = 'block';
+}
+
+function hideModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
