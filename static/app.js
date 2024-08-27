@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+    checkAuth();
     fetchBooks();
 });
 
@@ -8,16 +9,23 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
     
-    const loginData = { username, password };
-    
+    const loginData = new URLSearchParams();
+    loginData.append('username', username);
+    loginData.append('password', password);
+
     fetch('http://localhost:8000/login', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: JSON.stringify(loginData)
+        body: loginData.toString()
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.detail || "Login failed"); });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.access_token) {
             // Save the token in local storage (for future authenticated requests)
@@ -60,7 +68,6 @@ document.getElementById('signupForm').addEventListener('submit', function(event)
     .catch(error => console.error('Error signing up:', error));
 });
 
-
 function fetchBooks() {
     fetch('http://localhost:8000/books')
         .then(response => {
@@ -83,6 +90,35 @@ function fetchBooks() {
             });
         })
         .catch(error => console.error('Error fetching books:', error));
+}
+
+function checkAuth() {
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    const loginButton = document.getElementById('loginButton');
+    const signupButton = document.getElementById('signupButton');
+    const currentUser = document.getElementById('currentUser');
+    const logoutButton = document.getElementById('logoutButton');
+
+    if (token) {
+        loginButton.style.display = 'none';
+        signupButton.style.display = 'none';
+        currentUser.textContent = `Logged in as: ${username}`;
+        currentUser.style.display = 'inline';
+        logoutButton.style.display = 'inline';
+    } else {
+        loginButton.style.display = 'inline';
+        signupButton.style.display = 'inline';
+        currentUser.style.display = 'none';
+        logoutButton.style.display = 'none';
+    }
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    alert('Logged out successfully.');
+    checkAuth();
 }
 
 function showLogin() {
