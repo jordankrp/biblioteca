@@ -1,6 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
-    fetchBooks();
+    const token = localStorage.getItem('token');
+    if (token) {
+        console.log("Token found");
+        updateUIAfterLogin();
+    } else {
+        console.log("Token NOT found");
+        fetchBooks();  // Fetch and display books even if not logged in
+    }
 });
 
 // Handle login form submission
@@ -30,9 +36,10 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
         if (data.access_token) {
             // Save the token in local storage (for future authenticated requests)
             localStorage.setItem('token', data.access_token);
+            localStorage.setItem('username', username);
             alert('Login successful!');
-            // Close the modal
             hideModal('loginModal');
+            updateUIAfterLogin();
         } else {
             alert('Login failed: ' + (data.detail || 'Unknown error'));
         }
@@ -118,7 +125,7 @@ function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     alert('Logged out successfully.');
-    checkAuth();
+    location.reload();  // Refresh the page to reset the UI
 }
 
 function showLogin() {
@@ -131,4 +138,19 @@ function showSignup() {
 
 function hideModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
+}
+
+function updateUIAfterLogin() {
+    console.log('Updating UI after login');
+    const username = localStorage.getItem('username');
+    console.log("Username %s", username);
+    if (username) {
+        // Show the username and logout button
+        document.getElementById('currentUser').textContent = `Welcome, ${username}`;
+        document.getElementById('currentUser').style.display = 'inline';
+        document.getElementById('logoutButton').style.display = 'inline';
+        document.getElementById('loginButton').style.display = 'none';
+        document.getElementById('signupButton').style.display = 'none';
+    }
+    fetchBooks();  // Fetch and display books
 }

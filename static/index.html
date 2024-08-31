@@ -7,15 +7,15 @@
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
+    <div class="header">
+        <span id="currentUser" class="welcome-text" style="display: none;"></span>
+        <button id="logoutButton" class="auth-button" style="display: none;" onclick="logout()">Logout</button>
+    </div>
     <div class="container">
         <h1>Biblioteca</h1>
-        <div class="user-info">
-            <span id="currentUser" style="display: none;"></span>
-            <button id="logoutButton" style="display: none;" onclick="logout()">Logout</button>
-        </div>
         <div class="login-signup">
-            <button onclick="showLogin()">Login</button>
-            <button onclick="showSignup()">Sign Up</button>
+            <button id="loginButton" class="auth-button" onclick="showLogin()">Login</button>
+            <button id="signupButton" class="auth-button" onclick="showSignup()">Sign Up</button>
         </div>
         <ul id="books-list" class="books-list"></ul>
     </div>
