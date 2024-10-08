@@ -17,6 +17,9 @@
             <button id="loginButton" class="auth-button" onclick="showLogin()">Login</button>
             <button id="signupButton" class="auth-button" onclick="showSignup()">Sign Up</button>
         </div>
+        <!-- Create Book Button -->
+        <button id="createBookButton" class="auth-button" style="display: none;" onclick="showCreateBookForm()">Create Book</button>
+        <!-- List of Books -->
         <ul id="books-list" class="books-list"></ul>
     </div>
 
@@ -37,6 +40,18 @@
             <input type="email" id="signupEmail" name="email" placeholder="Email" required>
             <input type="password" id="signupPassword" name="password" placeholder="Password" required>
             <button type="submit">Sign Up</button>
+        </form>
+    </div>
+
+    <!-- Create Book Modal -->
+    <div id="createBookModal" class="modal" style="display: none;">
+        <h2>Create Book</h2>
+        <form id="createBookForm">
+            <input type="text" id="bookTitle" name="title" placeholder="Title" required>
+            <input type="text" id="bookAuthor" name="author" placeholder="Author" required>
+            <input type="text" id="bookYear" name="year" placeholder="Year" required>
+            <textarea id="bookSummary" name="summary" placeholder="Summary (Optional)"></textarea>
+            <button type="submit">Create Book</button>
         </form>
     </div>
 

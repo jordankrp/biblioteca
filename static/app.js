@@ -75,6 +75,39 @@ document.getElementById('signupForm').addEventListener('submit', function(event)
     .catch(error => console.error('Error signing up:', error));
 });
 
+// Handle create book form submission
+document.getElementById('createBookForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const token = localStorage.getItem('token'); // Get the token from local storage
+
+    if (!token) {
+        alert('You must be logged in to create a book.');
+        return;
+    }
+
+    const title = document.getElementById('bookTitle').value;
+    const author = document.getElementById('bookAuthor').value;
+    const year = document.getElementById('bookYear').value;
+    const summary = document.getElementById('bookSummary').value;
+
+    const response = await fetch('http://localhost:8000/books', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+        },
+        body: JSON.stringify({ title, author, year, summary }),
+    });
+
+    if (response.ok) {
+        const newBook = await response.json();
+        displayBook(newBook);
+        document.getElementById('createBookModal').style.display = 'none'; // Hide the modal after creation
+    } else {
+        alert('Failed to create book');
+    }
+});
+
 function fetchBooks() {
     fetch('http://localhost:8000/books')
         .then(response => {
@@ -106,6 +139,7 @@ function checkAuth() {
     const signupButton = document.getElementById('signupButton');
     const currentUser = document.getElementById('currentUser');
     const logoutButton = document.getElementById('logoutButton');
+    const createBookButton = document.getElementById('createBookButton');
 
     if (token) {
         loginButton.style.display = 'none';
@@ -113,11 +147,13 @@ function checkAuth() {
         currentUser.textContent = `Logged in as: ${username}`;
         currentUser.style.display = 'inline';
         logoutButton.style.display = 'inline';
+        createBookButton.style.display = 'inline';
     } else {
         loginButton.style.display = 'inline';
         signupButton.style.display = 'inline';
         currentUser.style.display = 'none';
         logoutButton.style.display = 'none';
+        createBookButton.style.display = 'none';
     }
 }
 
@@ -136,6 +172,10 @@ function showSignup() {
     document.getElementById('signupModal').style.display = 'block';
 }
 
+function showCreateBookForm() {
+    document.getElementById('createBookModal').style.display = 'block';
+}
+
 function hideModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
@@ -151,6 +191,18 @@ function updateUIAfterLogin() {
         document.getElementById('logoutButton').style.display = 'inline';
         document.getElementById('loginButton').style.display = 'none';
         document.getElementById('signupButton').style.display = 'none';
+        document.getElementById('createBookButton').style.display = 'inline';
     }
     fetchBooks();  // Fetch and display books
+}
+
+function displayBook(book) {
+    const bookItem = document.createElement('li');
+    bookItem.textContent = `${book.title} by ${book.author}, ${book.year}`;
+    if (book.summary) {
+        const summaryElement = document.createElement('p');
+        summaryElement.textContent = `Summary: ${book.summary}`;
+        bookItem.appendChild(summaryElement);
+    }
+    document.getElementById('books-list').appendChild(bookItem);
 }
