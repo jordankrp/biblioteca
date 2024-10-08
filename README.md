@@ -30,7 +30,7 @@ Then run `uvicorn app.main:app --host 0.0.0.0 --port 8000` to run the API locall
 If you want to containerise the API, you can do so by first building the image on your machine:
 `docker build -t biblioteca-api .`
 And then running the container in detached mode by passing in the environment variables at runtime:
-`docker run -d ---network="host" --name biblioteca-api -p 8000:8000 --env-file .env biblioteca-api`
+`docker run -d --network="host" --name biblioteca-api -p 8000:8000 --env-file .env biblioteca-api`
 
 You should then be able to access the UI from `localhost:8000` in your browser.
 
